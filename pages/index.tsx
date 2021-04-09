@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import React, {FC, useEffect} from 'react'
 import {
     WebGLRenderer,
@@ -10,8 +11,6 @@ import {
     SphereBufferGeometry,
     MeshPhongMaterial,
     Mesh,
-    HandleCameraAspectParams,
-    ParamsAnimate,
   } from 'three'
   import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
   import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
@@ -83,7 +82,7 @@ import {
     }
   
     // handle resize
-    const handleResize = ({ camera, renderer }: HandleCameraAspectParams) => {
+    const handleResize = ({ camera, renderer }) => {
       const width = window.innerWidth
       const height = window.innerHeight
       camera.aspect = width / height
@@ -98,7 +97,7 @@ import {
     })
 
     // animation
-    const animate = ({ object, composer }: ParamsAnimate) => {
+    const animate = ({ object, composer }) => {
       window.requestAnimationFrame(() => animate({ object, composer }))
       object.rotation.x += 0.01
       object.rotation.z += 0.01
@@ -106,7 +105,17 @@ import {
     }
   
     return (
-      <canvas ref={onCanvasLoaded} />
+      <>
+        <li>
+          <Link href="/">
+            <a>Home</a>
+          </Link>
+          <Link href="/glsl">
+            <a>GLSL</a>
+          </Link>
+        </li>
+        <canvas ref={onCanvasLoaded} />
+      </>
     )
   }
   
