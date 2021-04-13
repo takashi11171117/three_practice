@@ -23,8 +23,9 @@
             }
             .line {
                 margin-bottom: 8px;
-                height: 56px;
+                height: 64px;
                 position: relative;
+                overflow: hidden;
                 @include media('<=tablet') {
                     height: 48px;
                 }
