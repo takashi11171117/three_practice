@@ -2,8 +2,8 @@ import { AppProps } from 'next/app'
 import Head from 'next/head'
 import 'styles/globals.scss'
 
-const App = ({ Component, pageProps }: AppProps) => (
-  <>
+const App = ({ Component, pageProps }) => (
+  <div>
     <Head>
       <meta
         name="viewport"
@@ -13,7 +13,7 @@ const App = ({ Component, pageProps }: AppProps) => (
       {/* <link rel="manifest" href="/manifest.json" /> */}
     </Head>
     <Component {...pageProps} />
-  </>
+  </div>
 )
 
 export default App

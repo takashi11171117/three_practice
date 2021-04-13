@@ -1,5 +1,5 @@
 import React, { FC } from 'react'
-import Link from 'next/link'
+import RightArrow from 'assets/svg/arrow-right.svg'
 
 const Banner: FC = () => {
   return (
@@ -14,6 +14,12 @@ const Banner: FC = () => {
               <span>what I do.</span>
             </div>
           </h2>
+          <div className="btn-row">
+            <a href="/">
+              More about me
+              <RightArrow />
+            </a>
+          </div>
         </div>
       </div>
     </section>
