@@ -10,6 +10,15 @@ const Navigation: FC = () => {
             <div className="nav-label">Menu</div>
             <div className="nav-links">
               <li>
+                <Link href="/merge-webgl">Merge Webgl</Link>
+              </li>
+              <li>
+                <Link href="/glsl">GLSL</Link>
+              </li>
+              <li>
+                <Link href="/three">Three</Link>
+              </li>
+              <li>
                 <Link href="/case-studies">Case Studies</Link>
               </li>
               <li>

@@ -123,9 +123,6 @@ const GLSL: FC = () => {
 
   return (
     <>
-      <li>
-        <Link href="/">Home</Link>
-      </li>
       <canvas ref={onCanvasLoaded} />
     </>
   )
