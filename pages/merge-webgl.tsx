@@ -1,25 +1,34 @@
-import Link from 'next/link'
-import React, { FC, useEffect, useState, useMemo } from 'react'
+import React, { FC, useEffect, useState } from 'react'
 import {
   WebGLRenderer,
   Scene,
   PerspectiveCamera,
   Object3D,
-  Fog,
-  DirectionalLight,
-  AmbientLight,
-  BoxGeometry,
+  PlaneBufferGeometry,
   ShaderMaterial,
   Mesh,
+  DoubleSide,
+  Clock,
 } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
-import { GlitchPass } from 'three/examples/jsm/postprocessing/GlitchPass'
 import fragment from '../shaders/webgl.frag'
 import vertex from '../shaders/webgl.vert'
 
 const MergeWebgl: FC = () => {
+  const [material, setMaterial] = useState(
+    new ShaderMaterial({
+      uniforms: {
+        u_time: { value: 0.0 },
+      },
+      side: DoubleSide,
+      fragmentShader: fragment,
+      vertexShader: vertex,
+      //   wireframe: true,
+    }),
+  )
+
   const onCanvasLoaded = (canvas: HTMLCanvasElement) => {
     if (!canvas) {
       return
@@ -41,6 +50,8 @@ const MergeWebgl: FC = () => {
     const object = new Object3D()
     scene.add(object)
 
+    const clock = new Clock()
+
     // add object
     addObjects(object)
 
@@ -54,16 +65,11 @@ const MergeWebgl: FC = () => {
     // resize
     window.addEventListener('resize', () => handleResize({ camera, renderer }))
 
-    animate({ object, composer })
+    animate({ object, composer, clock })
   }
 
   const addObjects = (object) => {
-    const geometry = new BoxGeometry(0.5, 0.5, 0.5)
-
-    const material = new ShaderMaterial({
-      fragmentShader: fragment,
-      vertexShader: vertex,
-    })
+    const geometry = new PlaneBufferGeometry(4, 4, 150, 150)
 
     const mesh = new Mesh(geometry, material)
     object.add(mesh)
@@ -85,10 +91,10 @@ const MergeWebgl: FC = () => {
   })
 
   // animation
-  const animate = ({ object, composer }) => {
-    window.requestAnimationFrame(() => animate({ object, composer }))
-    object.rotation.x += 0.05
-    object.rotation.y += 0.05
+  const animate = ({ object, composer, clock }) => {
+    window.requestAnimationFrame(() => animate({ object, composer, clock }))
+    material.uniforms.u_time.value += clock.getDelta()
+    setMaterial(material)
     composer.render()
   }
 

@@ -1,4 +1,3 @@
-
 //	Classic Perlin 3D Noise 
 //	by Stefan Gustavson
 //
@@ -72,18 +71,4 @@ float cnoise(vec3 P){
   vec2 n_yz = mix(n_z.xy, n_z.zw, fade_xyz.y);
   float n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x); 
   return 2.2 * n_xyz;
-}
-
-uniform float u_time;
-varying float vNoise;
-
-void main() {
-    vec3 newposition = position;
-    float PI = 3.14159265;
-    // newposition.z += 0.1 * sin((newposition.x + 0.25 + u_time/100.0) * 2.0 * PI);
-    float noise = cnoise(3.*vec3(position.x,position.y,position.z + u_time/30.));
-    newposition += 0.1 * noise;
-    vNoise = noise;
-
-    gl_Position = projectionMatrix * modelViewMatrix * vec4( newposition, 1.0 );
 }
