@@ -9,6 +9,9 @@ const nextConfig = {
     includePaths: [path.join(__dirname, 'styles')],
     prependData: `@import "./varibles.scss";`,
   },
+  env: {
+    IMAGE_URL: '/_next/static/images/',
+  },
   webpack: (config) => {
     config.module.rules.push({
       test: /\.(png|jpg|gif)$/,
@@ -17,7 +20,7 @@ const nextConfig = {
         options: {
           esModule: false,
           limit: 100000,
-          name: '[name].[hash].[ext]',
+          name: '[name].[ext]',
           publicPath: '/_next/static/images',
           outputPath: 'static/images',
         },
