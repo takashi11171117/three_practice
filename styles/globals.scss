@@ -11,6 +11,11 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
+*{
+    margin: 0;
+    padding: 0;
+}
+
 .container {
   width: 1560px;
   min-width: 1560px;
@@ -125,7 +130,6 @@ html {
 
 .App {
   z-index: 2;
-  transform: translateY(0);
   position: relative;
 }
 
@@ -218,18 +222,106 @@ canvas {
     }
 }
 
-.App {
-    z-index: 2;
-    transform: translateY(0);
-    position: relative;
+/* grid */
+.grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 2em 0
 }
 
-.page {
-    height: 100vh;
-    width: 100%;
-    background: $white;
-    .row {
-        display: flex;
-        align-items: center;
+.item{
+    /* border: 1px solid #000; */
+    align-self: center;
+    justify-self: center;
+    text-decoration: none;
+    color: #333;
+    &:nth-child(odd){
+        justify-self: start;
     }
+    &:nth-child(even){
+        justify-self: end;
+    }
+    img{
+        width: 100%;
+        display: block;
+        opacity: 0;
+    }
+    &__image{
+        position: relative;
+        margin-bottom: 0.6em;
+    }
+    &__meta{
+        position: absolute;
+        left: -0.4em;
+        bottom: 0.4em;
+        transform-origin: 0 100%;
+        transform: rotate(-90deg);
+        text-transform: uppercase;
+        font-size: 80%;
+    }
+    &__title{
+        font-size: 40px;
+        line-height: 1.2;
+        margin-bottom: 0.4em;
+    }
+    &_p{
+        line-height: 1.4;
+        font-size: 1em;
+    }
+    &_h{
+        width: 100%;
+    }
+    &_v{
+        width: 80%;
+    }
+}
+
+
+/* footer */
+.footer{
+    border-top: 1px solid #ccc;
+    padding: 1em;
+    font-size: 15px;
+    display: flex;
+    margin-top: 8em;
+    line-height: 1.5;
+    padding: 1em 0 4em 0;
+    a{
+        color: #333;
+    }
+    p+p{
+        margin-left: auto;
+        text-align: right;
+    }
+}
+
+@media screen and (max-width: 600px) { 
+    .grid{
+        display: block;
+    }
+    .item_v,.item_h{
+        width: auto;
+        margin-bottom: 3em;
+    }
+    .item img{
+        width: 100%;
+        max-width: none;
+    }
+}
+
+#container{
+    height: 100vh;
+    width: 100vw;
+    position: fixed;
+    z-index: -1;
+    top: 0;
+    left: 0;
+}
+
+.page2{
+    width: 90%;
+    margin: 0 auto;
+    // padding-top: 200px;
+    // position: relative;
+    // z-index: 1;
 }

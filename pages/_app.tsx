@@ -50,17 +50,12 @@ const App = ({ Component, pageProps, router }: AppProps) => {
   return (
     <>
       <Head>
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1, shrink-to-fit=no"
-        />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         {/* <link rel="shortcut icon" href="/favicon.png" key="shortcutIcon" /> */}
         {/* <link rel="manifest" href="/manifest.json" /> */}
       </Head>
       <Header dimentions={dimentions} />
-      <div className="App">
-        <Component {...pageProps} />
-      </div>
+      <Component {...pageProps} />
       <Navigation />
     </>
   )

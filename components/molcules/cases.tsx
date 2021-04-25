@@ -36,20 +36,22 @@ const Cases: FC = () => {
           </div>
         </div>
         <div className="row">
-          {caseStudies.map((caseItem) => (
-            <div className="case" key={caseItem.id}>
-              <div className="case-details">
-                <span>{caseItem.subtitle}</span>
-                <h2>{caseItem.title}</h2>
+          {caseStudies.map((caseItem) => {
+            return (
+              <div className="case" key={caseItem.id}>
+                <div className="case-details">
+                  <span>{caseItem.subtitle}</span>
+                  <h2>{caseItem.title}</h2>
+                </div>
+                <div className="case-image">
+                  <img
+                    src={require(`assets/${caseItem.img}.jpg`)}
+                    alt={caseItem.title}
+                  />
+                </div>
               </div>
-              <div className="case-image">
-                <img
-                  src={require(`assets/${caseItem.img}.jpg`)}
-                  alt={caseItem.title}
-                />
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>
