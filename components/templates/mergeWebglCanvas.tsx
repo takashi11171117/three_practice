@@ -1,5 +1,6 @@
 import React, { FC, useEffect, useState } from 'react'
 import imagesLoaded from 'imagesloaded'
+import gsap from 'gsap'
 import FontFaceObserver from 'fontfaceobserver'
 import {
   WebGLRenderer,
@@ -15,13 +16,17 @@ import {
   TextureLoader,
   Texture,
   MeshBasicMaterial,
+  Vector2,
+  Raycaster,
 } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass'
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass'
 import Scroll from '../../helper/scroll'
 import fragment from '../../shaders/webgl.frag'
 import vertex from '../../shaders/webgl.vert'
+import noise from '../../shaders/noise.glsl'
 
 type ImageStore = {
   img: HTMLImageElement
@@ -34,6 +39,7 @@ type ImageStore = {
 
 const MergeWebglCanvas: FC = () => {
   let material: ShaderMaterial
+  const materials: Array<ShaderMaterial> = []
   let images: Array<HTMLImageElement>
   let imageStores: Array<ImageStore>
   let width: number
@@ -41,6 +47,7 @@ const MergeWebglCanvas: FC = () => {
   let scroll: Scroll
   let currentScroll = 0
   const previousScroll = 0
+  let customPass: ShaderPass
 
   const onCanvasLoaded = (canvas: HTMLCanvasElement) => {
     if (!canvas) {
@@ -97,16 +104,15 @@ const MergeWebglCanvas: FC = () => {
     })
 
     const allDone = [preloadImages]
+    const raycaster = new Raycaster()
+    const mouse = new Vector2()
 
     Promise.all(allDone).then(() => {
       scroll = new Scroll()
       addObjects(object)
       addImages(scene)
       setPosition()
-
-      const composer = new EffectComposer(renderer)
-      const renderPass = new RenderPass(scene, camera)
-      composer.addPass(renderPass)
+      mouseMovement(camera, raycaster, mouse, scene)
 
       // resize
       handleResize({ camera, renderer })
@@ -114,11 +120,106 @@ const MergeWebglCanvas: FC = () => {
         handleResize({ camera, renderer }),
       )
 
+      const composer = composerPass(renderer, scene, camera)
+
       animate({ object, composer, clock })
     })
   }
 
+  const composerPass = (renderer, scene, camera): EffectComposer => {
+    const composer = new EffectComposer(renderer)
+    const renderPass = new RenderPass(scene, camera)
+    composer.addPass(renderPass)
+
+    //custom shader pass
+    const counter = 0.0
+    const myEffect = {
+      uniforms: {
+        tDiffuse: { value: null },
+        scrollSpeed: { value: null },
+        time: { value: null },
+      },
+      vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix 
+          * modelViewMatrix 
+          * vec4( position, 1.0 );
+      }
+      `,
+      fragmentShader: `
+      uniform sampler2D tDiffuse;
+      varying vec2 vUv;
+      uniform float scrollSpeed;
+      uniform float time;
+      ${noise}
+      void main(){
+        vec2 newUV = vUv;
+        float area = smoothstep(1.,0.8,vUv.y)*2. - 1.;
+        float area1 = smoothstep(0.4,0.0,vUv.y);
+        area1 = pow(area1,4.);
+        float noise = 0.5*(cnoise(vec3(vUv*10.,time/5.)) + 1.);
+        float n = smoothstep(0.5,0.51, noise + area/2.);
+        newUV.x -= (vUv.x - 0.5)*0.1*area1*scrollSpeed;
+        gl_FragColor = texture2D( tDiffuse, newUV);
+      //   gl_FragColor = vec4(n,0.,0.,1.);
+      gl_FragColor = mix(vec4(1.),texture2D( tDiffuse, newUV),n);
+      // gl_FragColor = vec4(area,0.,0.,1.);
+      }
+      `,
+    }
+
+    customPass = new ShaderPass(myEffect)
+    customPass.renderToScreen = true
+
+    composer.addPass(customPass)
+
+    return composer
+  }
+
+  const mouseMovement = (
+    camera: PerspectiveCamera,
+    raycaster: Raycaster,
+    mouse: Vector2,
+    scene: Scene,
+  ) => {
+    window.addEventListener(
+      'mousemove',
+      (event) => {
+        mouse.x = (event.clientX / width) * 2 - 1
+        mouse.y = -(event.clientY / height) * 2 + 1
+
+        // update the picking ray with the camera and mouse position
+        raycaster.setFromCamera(mouse, camera)
+
+        // calculate objects intersecting the picking ray
+        const intersects = raycaster.intersectObjects(scene.children)
+
+        if (intersects.length > 0) {
+          // console.log(intersects[0]);
+          const obj = intersects[0].object
+          obj.material.uniforms.hover.value = intersects[0].uv
+        }
+      },
+      false,
+    )
+  }
+
   const addImages = (scene: Scene) => {
+    material = new ShaderMaterial({
+      uniforms: {
+        time: { value: 0 },
+        uImage: { value: 0 },
+        hover: { value: new Vector2(0.5, 0.5) },
+        hoverState: { value: 0 },
+      },
+      side: DoubleSide,
+      fragmentShader: fragment,
+      vertexShader: vertex,
+      //   wireframe: true,
+    })
+
     imageStores = images.map((img) => {
       const bounds = img.getBoundingClientRect()
       console.log(bounds)
@@ -133,9 +234,28 @@ const MergeWebglCanvas: FC = () => {
       const texture = new Texture(img)
       texture.needsUpdate = true
 
-      const material = new MeshBasicMaterial({ map: texture })
+      const _material = material.clone()
 
-      const mesh = new Mesh(geometry, material)
+      img.addEventListener('mouseenter', () => {
+        gsap.to(_material.uniforms.hoverState, {
+          duration: 1,
+          value: 1,
+          ease: 'power3.out',
+        })
+      })
+      img.addEventListener('mouseout', () => {
+        gsap.to(_material.uniforms.hoverState, {
+          duration: 1,
+          value: 0,
+          ease: 'power3.out',
+        })
+      })
+
+      materials.push(_material)
+
+      _material.uniforms.uImage.value = texture
+
+      const mesh = new Mesh(geometry, _material)
 
       scene.add(mesh)
 
@@ -198,8 +318,13 @@ const MergeWebglCanvas: FC = () => {
     scroll.render()
     currentScroll = scroll.scrollToRender
     setPosition()
+    customPass.uniforms.scrollSpeed.value = scroll.speedTarget
+    customPass.uniforms.time.value += clock.getDelta()
     window.requestAnimationFrame(() => animate({ object, composer, clock }))
-    // material.uniforms.u_time.value += clock.getDelta()
+    materials.forEach((m) => {
+      console.log(m)
+      m.uniforms.time.value += clock.getDelta()
+    })
     composer.render()
   }
 

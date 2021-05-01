@@ -27,7 +27,7 @@ const nextConfig = {
       },
     })
     config.module.rules.push({
-      test: /\.frag$|\.vert$/,
+      test: /\.frag$|\.vert$|\.glsl$/,
       use: 'raw-loader',
     })
     config.resolve.alias = {
